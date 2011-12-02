@@ -39,6 +39,9 @@ if __name__ == '__main__':
   sambamin = sambamax = 0
   peakmin = peakmax = 0
 
+  sminheat = smaxheat = 0
+  peakminheat = peakmaxheat = 0
+
   detectorName = sys.argv[2]
 
   newFile= 'new'
@@ -81,17 +84,23 @@ if __name__ == '__main__':
               p = b.GetPulseRecord(k)
               
               sumIon = 0
+              sumHeat = 0
               sumSambaIon = 0
-              if p.GetIsHeatPulse() == False:
+
                 for n in range(p.GetNumPulseAnalysisRecords()):
                   r = p.GetPulseAnalysisRecord(n)
                   polarity = polCalc.GetExpectedPolarity(p)
                   if r.GetName() == "KTrapKamperProto":
                     if r.IsBaseline() == 0:
-                      sumIon += polarity*r.GetAmp()
-                      if r.GetPeakPosition() < peakmin: peakmin = r.GetPeakPosition()
-                      if r.GetPeakPosition() > peakmax: peakmax = r.GetPeakPosition()
-
+                      if p.GetIsHeatPulse() == False:
+                        sumIon += polarity*r.GetAmp()
+                        if r.GetPeakPosition() < peakmin: peakmin = r.GetPeakPosition()
+                        if r.GetPeakPosition() > peakmax: peakmax = r.GetPeakPosition()
+                      else:
+                        heatAmp += polarity*r.GetAmp()
+                        if r.GetPeakPosition() < peakmin: peakmin = r.GetPeakPosition()
+                        if r.GetPeakPosition() > peakmax: peakmax = r.GetPeakPosition()
+                        
                   elif r.GetName() == "samba":
                     if r.IsBaseline() == 0:
                       sumSambaIon += polarity*r.GetAmp()
