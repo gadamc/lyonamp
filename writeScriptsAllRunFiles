@@ -1,0 +1,12 @@
+#!/usr/local/bin/tcsh
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12/GammaS1/periods/runlist.txt
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12/GammaS2/periods/runlist.txt
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12/GammaS3/periods/runlist.txt
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12/GammaS4/periods/runlist.txt
+
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12Bis/GammaS1/periods/runlist.txt
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12Bis/GammaS2/periods/runlist.txt
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12Bis/GammaS3/periods/runlist.txt
+./writeScriptsFromRunList.py /sps/edelweis/EdwRootAna/ID_Run12Bis/GammaS4/periods/runlist.txt
+
+chmod +x *.sh
