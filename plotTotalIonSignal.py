@@ -20,7 +20,7 @@ def get2dHist(rootfile, name, xmin, xmax, ymin, ymax):
     print h.GetEntries()
   except:
     print 'making new hist:', name
-    h = TH2D(name,name,200,xmin,xmax,200,ymin,ymax)
+    h = TH2D(name,name,5000,xmin,xmax,5000,ymin,ymax)
   
   return h
 
@@ -38,9 +38,6 @@ if __name__ == '__main__':
   smin = smax = 0
   sambamin = sambamax = 0
   peakmin = peakmax = 0
-
-  sminheat = smaxheat = 0
-  peakminheat = peakmaxheat = 0
 
   detectorName = sys.argv[2]
 
@@ -84,23 +81,17 @@ if __name__ == '__main__':
               p = b.GetPulseRecord(k)
               
               sumIon = 0
-              sumHeat = 0
               sumSambaIon = 0
-
+              if p.GetIsHeatPulse() == False:
                 for n in range(p.GetNumPulseAnalysisRecords()):
                   r = p.GetPulseAnalysisRecord(n)
                   polarity = polCalc.GetExpectedPolarity(p)
                   if r.GetName() == "KTrapKamperProto":
                     if r.IsBaseline() == 0:
-                      if p.GetIsHeatPulse() == False:
-                        sumIon += polarity*r.GetAmp()
-                        if r.GetPeakPosition() < peakmin: peakmin = r.GetPeakPosition()
-                        if r.GetPeakPosition() > peakmax: peakmax = r.GetPeakPosition()
-                      else:
-                        heatAmp += polarity*r.GetAmp()
-                        if r.GetPeakPosition() < peakmin: peakmin = r.GetPeakPosition()
-                        if r.GetPeakPosition() > peakmax: peakmax = r.GetPeakPosition()
-                        
+                      sumIon += polarity*r.GetAmp()
+                      if r.GetPeakPosition() < peakmin: peakmin = r.GetPeakPosition()
+                      if r.GetPeakPosition() > peakmax: peakmax = r.GetPeakPosition()
+
                   elif r.GetName() == "samba":
                     if r.IsBaseline() == 0:
                       sumSambaIon += polarity*r.GetAmp()
