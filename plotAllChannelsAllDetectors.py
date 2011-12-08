@@ -158,7 +158,7 @@ def main(*arg):
           chanInfo['peakPos'].Fill( (result.GetPeakPosition()-pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth())
 
           if pulse.GetIsHeatPulse() == False:
-            if polarity*result.GetAmp() < maxAmp: 
+            if polarity*result.GetAmp() < maxAmp and result.GetPeakPosition() > pulse.GetPretriggerSize()*.95: 
               maxAmp = polarity*result.GetAmp()
               pulseWithMaxAmp = k
 
@@ -169,7 +169,7 @@ def main(*arg):
         pulse = bolo.GetPulseRecord(pulseWithMaxAmp)
         result = pulse.GetPulseAnalysisRecord(resultName)
         
-        if result.GetPeakPosition() < pulse.GetPretriggerSize()*0.9:
+        if result.GetPeakPosition() < pulse.GetPretriggerSize()*0.95:
           continue  #if the pulse position is less than the pretrigger size, let's assume this is noise, continuing to the next bolo record
         
       
@@ -193,7 +193,7 @@ def main(*arg):
 
           if pulse.GetIsHeatPulse():
             
-            if math.fabs(relPulseTime-ionPulseTime) <  500.0*pulse.GetPulseTimeWidth():
+            if math.fabs(relPulseTime-ionPulseTime) <  10.0*pulse.GetPulseTimeWidth():
               #print 'good heat pulse found', pulse.GetChannelName()
               #print relPulseTime, ionPulseTime, math.fabs(relPulseTime-ionPulseTime), '<', 500.0*pulse.GetPulseTimeWidth()
           
@@ -226,7 +226,7 @@ def main(*arg):
           #just focus on the ionization pulses here.
           if pulse.GetIsHeatPulse() == False:
             
-            if math.fabs(result.GetPeakPosition() - peakPositionOfIon) < 500.0:
+            if math.fabs(result.GetPeakPosition() - peakPositionOfIon) < 100.0:
               #print 'good ion pulse found', pulse.GetChannelName()
               #print result.GetPeakPosition(), peakPositionOfIon, math.fabs(result.GetPeakPosition() - peakPositionOfIon), '<', 500.0
               chanInfo['hist'].Fill(result.GetAmp())  
@@ -241,7 +241,7 @@ def main(*arg):
                   
                   chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( result.GetAmp(), otherResult.GetAmp())      
                   
-        detectorInfo[det]['sumIonHist'].Fill(sumIon)  
+        detectorInfo[bolo.GetDetectorName()]['sumIonHist'].Fill(sumIon)  
 
   fout.cd()
   for i in range(len(histList)):
