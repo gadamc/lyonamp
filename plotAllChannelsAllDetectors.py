@@ -99,9 +99,9 @@ def main(*arg):
       chanInfo = chans[chan]
       #print json.dumps(chanInfo, indent=1)
       chanInfo['hist'] = getHist(string.replace(chan, ' ', '_')+'_hist', chanInfo['min'], chanInfo['max'])
-      chanInfo['peakPos'] = TH1D(det+'_peakPos', det+'_peakPos', 10000, -50e6, 50e6)  
-      #chanInfo['allIonPeakDiff'] = TH1D(det+'_allIonPeakDiff', det+'_allIonPeakDiff', 10000, -50e6, 50e6)  
-      chanInfo['maxIonPeakDiff'] = TH1D(det+'_maxIonPeakDiff', det+'_maxIonPeakDiff', 10000, -50e6, 50e6)  
+      chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', det+'_peakPos', 10000, -500e6, 500e6)  
+      #chanInfo['allIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_allIonPeakDiff', string.replace(chan, ' ', '_')+'_allIonPeakDiff', 10000, -50e6, 50e6)  
+      chanInfo['maxIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_maxIonPeakDiff', det+'_maxIonPeakDiff', 10000, -500e6, 500e6)  
 
       histList.append(chanInfo['hist'])
       histList.append(chanInfo['peakPos'])
