@@ -53,8 +53,8 @@ def main(*arg):
           detectorInfo[detname]['maxSumIon'] = 0
           detectorInfo[detname]['minSumIon'] = 0
           detectorInfo[detname]['chans'] = {}
-        sumIon = 0
-          
+        
+        sumIon = 0  
         for k in range(bolo.GetNumPulseRecords()):
           pulse = bolo.GetPulseRecord(k)
           channame = pulse.GetChannelName()
@@ -214,11 +214,11 @@ def main(*arg):
         if goodHeatPulse == False:
           continue  # move on to the next bolometer event
               
-        
+        sumIon = 0
+
         for k in range(bolo.GetNumPulseRecords()):
           pulse = bolo.GetPulseRecord(k)
-          sumIon = 0
-          
+                    
           chanInfo = detectorInfo[bolo.GetDetectorName()]['chans'][pulse.GetChannelName()]
           result = pulse.GetPulseAnalysisRecord(resultName)
           polarity = polCalc.GetExpectedPolarity(pulse)
@@ -239,10 +239,7 @@ def main(*arg):
                   otherPol = polCalc.GetExpectedPolarity(pulse)
                   otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
                   
-                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( result.GetAmp(), otherResult.GetAmp())
-          
-          
-              
+                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( result.GetAmp(), otherResult.GetAmp())      
                   
         detectorInfo[det]['sumIonHist'].Fill(sumIon)  
 
