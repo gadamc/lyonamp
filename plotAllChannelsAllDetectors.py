@@ -197,7 +197,7 @@ def main(*arg):
               #print 'good heat pulse found', pulse.GetChannelName()
               #print relPulseTime, ionPulseTime, math.fabs(relPulseTime-ionPulseTime), '<', 500.0*pulse.GetPulseTimeWidth()
           
-              chanInfo['hist'].Fill(polarity*result.GetAmp())
+              chanInfo['hist'].Fill(result.GetAmp())
               goodHeatPulse = True
 
 
@@ -208,7 +208,7 @@ def main(*arg):
                   otherPol = polCalc.GetExpectedPolarity(pulse)
                   otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
                   
-                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp(), otherPol*otherResult.GetAmp())
+                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( result.GetAmp(), otherPol*otherResult.GetAmp())
 
           
         if goodHeatPulse == False:
@@ -229,7 +229,7 @@ def main(*arg):
             if math.fabs(result.GetPeakPosition() - peakPositionOfIon) < 500.0:
               #print 'good ion pulse found', pulse.GetChannelName()
               #print result.GetPeakPosition(), peakPositionOfIon, math.fabs(result.GetPeakPosition() - peakPositionOfIon), '<', 500.0
-              chanInfo['hist'].Fill(polarity*result.GetAmp())  
+              chanInfo['hist'].Fill(result.GetAmp())  
               sumIon += polarity*result.GetAmp()
               
               #fill the correlation histogram for the other channels
@@ -239,7 +239,7 @@ def main(*arg):
                   otherPol = polCalc.GetExpectedPolarity(pulse)
                   otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
                   
-                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp(), otherPol*otherResult.GetAmp())
+                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( result.GetAmp(), otherResult.GetAmp())
           
           
               
