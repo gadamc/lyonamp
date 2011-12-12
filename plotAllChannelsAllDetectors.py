@@ -104,9 +104,9 @@ def main(*arg):
       chanInfo['rawhist'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
       chanInfo['goodhist'] = getHist(string.replace(chan, ' ', '_')+'_goodhist', chanInfo['min'], chanInfo['max'])
       chanInfo['positiveTriggerHist'] = getHist(string.replace(chan, ' ', '_')+'_postrighist', chanInfo['min'], chanInfo['max'])
-      chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', det+'_peakPos', 10000, -500e6, 500e6)  
+      chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', string.replace(chan, ' ', '_')+'_peakPos', 10000, -500e6, 500e6)  
       #chanInfo['allIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_allIonPeakDiff', string.replace(chan, ' ', '_')+'_allIonPeakDiff', 10000, -50e6, 50e6)  
-      chanInfo['maxIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_maxIonPeakDiff', det+'_maxIonPeakDiff', 10000, -500e6, 500e6)  
+      chanInfo['maxIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_maxIonPeakDiff', string.replace(chan, ' ', '_')+'_maxIonPeakDiff', 10000, -500e6, 500e6)  
 
       histList.append(chanInfo['goodhist'])
       histList.append(chanInfo['rawhist'])
