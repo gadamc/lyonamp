@@ -17,7 +17,10 @@ def get2dHist(name, xmin, xmax, ymin, ymax):
 
   
 def main(*arg):  
-  
+  '''
+  Usage: ./plotAllChannelsAllDetectors.py startRun endRun PulseAnalysisRecordName outputFile
+  example: ./plotAllChannelsAllDetectors.py lk18b022 lk18b024 KTrapKamperProto lk18b.results.root
+  '''  
   gROOT.SetBatch(True)
   startRunName = arg[0]
   endRunName = arg[1]
@@ -253,6 +256,8 @@ def main(*arg):
       print 'writing hist', histList[i].GetName(), histList[i].GetEntries()
       histList[i].Write()
   fout.Close()
+
+
 
 if __name__ == '__main__':
   main(*sys.argv[1:])
