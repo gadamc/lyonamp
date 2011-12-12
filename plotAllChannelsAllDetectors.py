@@ -201,7 +201,7 @@ def main(*arg):
           polarity = polCalc.GetExpectedPolarity(pulse)
           relPulseTime = (result.GetPeakPosition() -  pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth()
           chanInfo = detectorInfo[bolo.GetDetectorName()]['chans'][pulse.GetChannelName()]
-          chanInfo['maxIonPeakDiff'].Fill(relPulseTime)
+          chanInfo['maxIonPeakDiff'].Fill(relPulseTime - ionPulseTime)
 
           if pulse.GetIsHeatPulse():
             
