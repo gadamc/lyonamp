@@ -98,12 +98,14 @@ def main(*arg):
       print chan
       chanInfo = chans[chan]
       #print json.dumps(chanInfo, indent=1)
-      chanInfo['hist'] = getHist(string.replace(chan, ' ', '_')+'_hist', chanInfo['min'], chanInfo['max'])
+      chanInfo['rawhist'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
+      chanInfo['goodhist'] = getHist(string.replace(chan, ' ', '_')+'_goodhist', chanInfo['min'], chanInfo['max'])
       chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', det+'_peakPos', 10000, -500e6, 500e6)  
       #chanInfo['allIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_allIonPeakDiff', string.replace(chan, ' ', '_')+'_allIonPeakDiff', 10000, -50e6, 50e6)  
       chanInfo['maxIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_maxIonPeakDiff', det+'_maxIonPeakDiff', 10000, -500e6, 500e6)  
 
-      histList.append(chanInfo['hist'])
+      histList.append(chanInfo['goodhist'])
+      histList.append(chanInfo['rawhist'])
       histList.append(chanInfo['peakPos'])
       #histList.append(chanInfo['allIonPeakDiff'])
       histList.append(chanInfo['maxIonPeakDiff'])
@@ -142,6 +144,7 @@ def main(*arg):
         
         #first step is to find the ionization pulse with the largest peak
         #this will define the time of the event
+        #also, stuff the results into a histogram to see the pulse amplitude of all data
         maxAmp = 0
         pulseWithMaxAmp = -1
         for k in range(bolo.GetNumPulseRecords()):
@@ -156,7 +159,8 @@ def main(*arg):
           polarity = polCalc.GetExpectedPolarity(pulse)
        
           chanInfo['peakPos'].Fill( (result.GetPeakPosition()-pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth())
-
+          chanInfo['rawhist'].Fill(result.GetAmp()) 
+          
           if pulse.GetIsHeatPulse() == False:
             if polarity*result.GetAmp() < maxAmp and result.GetPeakPosition() > pulse.GetPretriggerSize()*.95: 
               maxAmp = polarity*result.GetAmp()
@@ -173,7 +177,7 @@ def main(*arg):
           continue  #if the pulse position is less than the pretrigger size, let's assume this is noise, continuing to the next bolo record
         
       
-        ionPulseTime = (result.GetPeakPosition() -  pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth() 
+        ionPulseTime = (result.GetPeakPosition() -  pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth() #in units of nanoseconds
         peakPositionOfIon = result.GetPeakPosition()
         
         #print 'max peak position' peakPositionOfIon, ionPulseTime
@@ -197,7 +201,7 @@ def main(*arg):
               #print 'good heat pulse found', pulse.GetChannelName()
               #print relPulseTime, ionPulseTime, math.fabs(relPulseTime-ionPulseTime), '<', 500.0*pulse.GetPulseTimeWidth()
           
-              chanInfo['hist'].Fill(result.GetAmp())
+              chanInfo['goodhist'].Fill(result.GetAmp())
               goodHeatPulse = True
 
 
@@ -226,10 +230,10 @@ def main(*arg):
           #just focus on the ionization pulses here.
           if pulse.GetIsHeatPulse() == False:
             
-            if math.fabs(result.GetPeakPosition() - peakPositionOfIon) < 100.0:
+            if math.fabs( (result.GetPeakPosition() -  pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth()  - ionPulseTime) < 1000.0e3: #1000e3 ns = 1 ms, which is typically 100 bins in ionization
               #print 'good ion pulse found', pulse.GetChannelName()
               #print result.GetPeakPosition(), peakPositionOfIon, math.fabs(result.GetPeakPosition() - peakPositionOfIon), '<', 500.0
-              chanInfo['hist'].Fill(result.GetAmp())  
+              chanInfo['goodhist'].Fill(result.GetAmp())  
               sumIon += polarity*result.GetAmp()
               
               #fill the correlation histogram for the other channels
