@@ -262,7 +262,7 @@ def main(*arg):
     if histList[i]!=None:
       if histList[i].GetEntries() == 0:
         continue
-      print 'writing hist', histList[i].GetName(), histList[i].GetEntries()
+      #print 'writing hist', histList[i].GetName(), histList[i].GetEntries()
       histList[i].Write()
   fout.Close()
 
