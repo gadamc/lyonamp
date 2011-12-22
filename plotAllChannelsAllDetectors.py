@@ -102,7 +102,7 @@ def main(*arg):
     for chan in chans.iterkeys():
       #print chan
       chanInfo = chans[chan]
-      print 'total counts:', chanInfo['counts']
+      print chan, 'total counts:', chanInfo['counts']
       #print json.dumps(chanInfo, indent=1)
       chanInfo['rawhist'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
       chanInfo['goodhist'] = getHist(string.replace(chan, ' ', '_')+'_goodhist', chanInfo['min'], chanInfo['max'])
