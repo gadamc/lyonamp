@@ -171,7 +171,7 @@ def main(*arg):
           chanInfo['peakPos'].Fill( (result.GetPeakPosition()-pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth())
           chanInfo['rawhist'].Fill(result.GetAmp()) 
           
-          if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.99:
+          if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.95:
             chanInfo['positiveTriggerHist'].Fill(result.GetAmp())  #sort the if statements this way so that I get the heat pulses too...
             
             if pulse.GetIsHeatPulse() == False:
