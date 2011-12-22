@@ -260,6 +260,8 @@ def main(*arg):
   fout.cd()
   for i in range(len(histList)):
     if histList[i]!=None:
+      if histList[i].GetEntries() == 0:
+        continue
       print 'writing hist', histList[i].GetName(), histList[i].GetEntries()
       histList[i].Write()
   fout.Close()
