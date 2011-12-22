@@ -144,12 +144,14 @@ def main(*arg):
     
     for i in range(f.GetEntries()):
       f.GetEntry(i)
-      
+
+
       for j in range(event.GetNumBolos()):
+
         bolo = event.GetBolo(j)
         detname = bolo.GetDetectorName()
         
-        
+        #print detname
         #first step is to find the ionization pulse with the largest peak
         #this will define the time of the event
         #also, stuff the results into a histogram to see the pulse amplitude of all data
@@ -159,13 +161,13 @@ def main(*arg):
           pulse = bolo.GetPulseRecord(k)
           
           if pulse.GetPulseLength() == 0:
-            #print 'pulse length is zero'
+            #print 'pulse length is zero', pulse.GetChannelName()
             continue 
 
           chanInfo = detectorInfo[detname]['chans'][pulse.GetChannelName()]
           result = pulse.GetPulseAnalysisRecord(resultName)
           polarity = polCalc.GetExpectedPolarity(pulse)
-       
+          #print pulse.GetChannelName()
           chanInfo['peakPos'].Fill( (result.GetPeakPosition()-pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth())
           chanInfo['rawhist'].Fill(result.GetAmp()) 
           
@@ -179,18 +181,22 @@ def main(*arg):
 
         if pulseWithMaxAmp == -1:
           #print 'no maximum amp found'
-          break  #we didn't find a pulse with a maximum amplitude. was it because of events with zero pulse length?
+          #continue  #we didn't find a pulse with a maximum amplitude. was it because of events with zero pulse length?
+          pass
 
-        pulse = bolo.GetPulseRecord(pulseWithMaxAmp)
-        result = pulse.GetPulseAnalysisRecord(resultName)
+        if pulseWithMaxAmp != -1:
+          pulse = bolo.GetPulseRecord(pulseWithMaxAmp)
+          result = pulse.GetPulseAnalysisRecord(resultName)
         
-        if result.GetPeakPosition() < pulse.GetPretriggerSize()*0.99:
-          continue  #if the pulse position is less than the pretrigger size, let's assume this is noise, continuing to the next bolo record
+          if result.GetPeakPosition() < pulse.GetPretriggerSize()*0.99:
+            continue  #if the pulse position is less than the pretrigger size, let's assume this is noise, continuing to the next bolo record
         
       
-        ionPulseTime = (result.GetPeakPosition() -  pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth() #in units of nanoseconds
-        peakPositionOfIon = result.GetPeakPosition()
+          ionPulseTime = (result.GetPeakPosition() -  pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth() #in units of nanoseconds
+        else:
+          ionPulseTime = 0
         
+
         #print 'max peak position' peakPositionOfIon, ionPulseTime
         
         #loop back through the pulses to gather the results, requiring that the pulse peak position be within a 
