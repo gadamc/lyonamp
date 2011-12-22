@@ -5,12 +5,12 @@ from couchdbkit import Server, Database
 import sys, os, string, math, json
 
 def getHist(name, amin, amax):  
-  print name,name,500,amin,amax
+  #print name,name,500,amin,amax
   h = TH1D(name,name,500,amin,amax)
   return h
 
 def get2dHist(name, xmin, xmax, ymin, ymax):
-  print name,name,100,xmin,xmax,100,ymin,ymax
+  #print name,name,100,xmin,xmax,100,ymin,ymax
   h = TH2D(name,name,100,xmin,xmax,100,ymin,ymax)
   return h
 
