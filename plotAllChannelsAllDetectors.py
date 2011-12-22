@@ -132,7 +132,7 @@ def main(*arg):
                
 
   for i in range(len(histList)):
-    print histList[i].GetName()
+    #print histList[i].GetName()
   
   #all of the histograms are now set up... loop back through the data and fill them in.
   for afile in fileList:
