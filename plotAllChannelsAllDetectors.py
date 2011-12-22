@@ -69,11 +69,13 @@ def main(*arg):
             detectorInfo[detname]['chans'][channame]['min'] = 0
             detectorInfo[detname]['chans'][channame]['max'] = 0
             detectorInfo[detname]['chans'][channame]['pulselength'] = pulse.GetPulseLength()
-          
+            detectorInfo[detname]['chans'][channame]['counts'] = 0
+            
           chanInfo = detectorInfo[detname]['chans'][channame]
           result = pulse.GetPulseAnalysisRecord(resultName)
           polarity = polCalc.GetExpectedPolarity(pulse)
-            
+          chanInfo['counts'] += 1
+          
           if result.IsBaseline() == 0:    
             if pulse.GetIsHeatPulse() == False:
               sumIon += polarity*result.GetAmp()
@@ -88,8 +90,8 @@ def main(*arg):
   fout = TFile(arg[3],'recreate')
   histList = []
   for det in detectorInfo.iterkeys():
-    print det
-    print json.dumps(detectorInfo[det], indent=1)
+    #print det
+    #print json.dumps(detectorInfo[det], indent=1)
 
     detectorInfo[det]['sumIonHist'] = 'test'
     detectorInfo[det]['sumIonHist'] = getHist(det+'_sumIon', detectorInfo[detname]['minSumIon'], detectorInfo[detname]['maxSumIon'])
@@ -98,8 +100,9 @@ def main(*arg):
     chans = detectorInfo[det]['chans']
 
     for chan in chans.iterkeys():
-      print chan
+      #print chan
       chanInfo = chans[chan]
+      print 'total counts:', chanInfo['counts']
       #print json.dumps(chanInfo, indent=1)
       chanInfo['rawhist'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
       chanInfo['goodhist'] = getHist(string.replace(chan, ' ', '_')+'_goodhist', chanInfo['min'], chanInfo['max'])
@@ -118,9 +121,9 @@ def main(*arg):
       chanInfo['corrhists'] = {}
       for otherChan in chans.iterkeys():
         if otherChan != chan:
-          print '     ', otherChan
-          print '       min', chans[otherChan]['min']
-          print '       max', chans[otherChan]['max']
+          #print '     ', otherChan
+          #print '       min', chans[otherChan]['min']
+          #print '       max', chans[otherChan]['max']
           #print '     ', json.dumps(chans[otherChan], indent=1)
           chanInfo['corrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_hist', 
                                                       chanInfo['min'], chanInfo['max'], chans[otherChan]['min'], 
@@ -233,7 +236,7 @@ def main(*arg):
           chanInfo = detectorInfo[bolo.GetDetectorName()]['chans'][pulse.GetChannelName()]
           result = pulse.GetPulseAnalysisRecord(resultName)
           polarity = polCalc.GetExpectedPolarity(pulse)
-              
+          
           #just focus on the ionization pulses here.
           if pulse.GetIsHeatPulse() == False:
             
