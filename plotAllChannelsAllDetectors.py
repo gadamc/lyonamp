@@ -131,7 +131,7 @@ def main(*arg):
           histList.append(chanInfo['corrhists'][otherChan])
                
 
-  for i in range(len(histList)):
+  #for i in range(len(histList)):
     #print histList[i].GetName()
   
   #all of the histograms are now set up... loop back through the data and fill them in.
