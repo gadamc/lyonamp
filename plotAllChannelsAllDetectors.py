@@ -6,12 +6,12 @@ import sys, os, string, math, json
 
 def getHist(name, amin, amax):  
   #print name,name,500,amin,amax
-  h = TH1D(name,name,500,amin,amax)
+  h = TH1D(name,name,2000,amin,amax)
   return h
 
 def get2dHist(name, xmin, xmax, ymin, ymax):
   #print name,name,100,xmin,xmax,100,ymin,ymax
-  h = TH2D(name,name,100,xmin,xmax,100,ymin,ymax)
+  h = TH2D(name,name,200,xmin,xmax,200,ymin,ymax)
   return h
 
 
@@ -107,9 +107,9 @@ def main(*arg):
       chanInfo['rawhist'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
       chanInfo['goodhist'] = getHist(string.replace(chan, ' ', '_')+'_goodhist', chanInfo['min'], chanInfo['max'])
       chanInfo['positiveTriggerHist'] = getHist(string.replace(chan, ' ', '_')+'_postrighist', chanInfo['min'], chanInfo['max'])
-      chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', string.replace(chan, ' ', '_')+'_peakPos', 10000, -500e6, 500e6)  
+      chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', string.replace(chan, ' ', '_')+'_peakPos', 10000, -50e6, 50e6)  
       #chanInfo['allIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_allIonPeakDiff', string.replace(chan, ' ', '_')+'_allIonPeakDiff', 10000, -50e6, 50e6)  
-      chanInfo['maxIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_maxIonPeakDiff', string.replace(chan, ' ', '_')+'_maxIonPeakDiff', 10000, -500e6, 500e6)  
+      chanInfo['maxIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_maxIonPeakDiff', string.replace(chan, ' ', '_')+'_maxIonPeakDiff', 10000, -50e6, 50e6)  
 
       histList.append(chanInfo['goodhist'])
       histList.append(chanInfo['rawhist'])
@@ -171,7 +171,7 @@ def main(*arg):
           chanInfo['peakPos'].Fill( (result.GetPeakPosition()-pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth())
           chanInfo['rawhist'].Fill(result.GetAmp()) 
           
-          if result.GetPeakPosition() > 4080 and result.GetPeakPosition() < 4110: #make a tight range 
+          if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.95:
             chanInfo['positiveTriggerHist'].Fill(result.GetAmp())  #sort the if statements this way so that I get the heat pulses too...
             
             if pulse.GetIsHeatPulse() == False:
