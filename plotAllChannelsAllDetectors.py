@@ -171,7 +171,7 @@ def main(*arg):
           chanInfo['peakPos'].Fill( (result.GetPeakPosition()-pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth())
           chanInfo['rawhist'].Fill(result.GetAmp()) 
           
-          if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.95:
+          if result.GetPeakPosition() > 4080 and result.GetPeakPosition() < 4110: #make a tight range 
             chanInfo['positiveTriggerHist'].Fill(result.GetAmp())  #sort the if statements this way so that I get the heat pulses too...
             
             if pulse.GetIsHeatPulse() == False:
@@ -188,7 +188,7 @@ def main(*arg):
           pulse = bolo.GetPulseRecord(pulseWithMaxAmp)
           result = pulse.GetPulseAnalysisRecord(resultName)
         
-          if result.GetPeakPosition() < pulse.GetPretriggerSize()*0.99:
+          if result.GetPeakPosition() < pulse.GetPretriggerSize()*0.98:
             continue  #if the pulse position is less than the pretrigger size, let's assume this is noise, continuing to the next bolo record
         
       
