@@ -16,7 +16,7 @@ def main(arg):
     doc = row['doc']
     if doc.has_key('proc0'):
       #if you wanted, you could search this doc for particular criteria, 
-      #such as the run type if you want to only process "calibration gamma" 
+      #such as the 'Condition' if you want to only process "calibration gamma" 
       #data
       # if doc['Condition'] == 'calibration gamma'
 

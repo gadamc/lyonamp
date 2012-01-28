@@ -18,8 +18,8 @@ def get2dHist(name, xmin, xmax, ymin, ymax):
   
 def main(*arg):  
   '''
-  Usage: ./plotAllChannelsAllDetectors.py startRun endRun PulseAnalysisRecordName outputFile
-  example: ./plotAllChannelsAllDetectors.py lk18b022 lk18b024 KTrapKamperProto lk18b.results.root
+  Usage: ./plotAllSimple.py startRun endRun PulseAnalysisRecordName outputFile
+  example: ./plotAllSimple.py lk18b022 lk18b024 KTrapKamperProto lk18b.results.root
   '''  
   gROOT.SetBatch(True)
   startRunName = arg[0]
@@ -41,12 +41,12 @@ def main(*arg):
   for afile in fileList:
     
     f = KDataReader(afile)
-    print 'spinning file', afile, f.GetEntries(), 'entries'
+    print 'opening file', afile, f.GetEntries(), 'entries'
     
     event = f.GetEvent()
-    
- 
-    f.GetEntry(i)
+    #assuming that we're running with raw, unmerged data files and that for each 
+    #event, there is a record for each channel found in the whole file.
+    #this won't work if we use merged data
       
     for j in range(event.GetNumBolos()):
       bolo = event.GetBolo(j)
@@ -68,7 +68,6 @@ def main(*arg):
           detectorInfo[detname]['chans'][channame] = {}
           detectorInfo[detname]['chans'][channame]['min'] = 33000
           detectorInfo[detname]['chans'][channame]['max'] = -33000
-          detectorInfo[detname]['chans'][channame]['pulselength'] = pulse.GetPulseLength()
           
   
   #for each detector and channel, set up the histograms
@@ -78,9 +77,10 @@ def main(*arg):
     #print det
     #print json.dumps(detectorInfo[det], indent=1)
 
-    detectorInfo[det]['sumIonHist'] = 'test'
     detectorInfo[det]['sumIonHist'] = getHist(det+'_sumIon', detectorInfo[detname]['minSumIon'], detectorInfo[detname]['maxSumIon'])
     histList.append(detectorInfo[det]['sumIonHist'])
+    detectorInfo[det]['narrowSumIonHist'] = getHist(det+'_narrowSumIon', detectorInfo[detname]['minSumIon'], detectorInfo[detname]['maxSumIon'])
+    histList.append(detectorInfo[det]['narrowSumIonHist'])
     
     chans = detectorInfo[det]['chans']
 
@@ -93,30 +93,28 @@ def main(*arg):
       chanInfo['narrowhist'] = getHist(string.replace(chan, ' ', '_')+'_narrowhist', chanInfo['min'], chanInfo['max'])
       chanInfo['positiveTriggerHist'] = getHist(string.replace(chan, ' ', '_')+'_postrighist', chanInfo['min'], chanInfo['max'])
       chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', string.replace(chan, ' ', '_')+'_peakPos', 10000, -50e6, 50e6)  
-      #chanInfo['allIonPeakDiff'] = TH1D(string.replace(chan, ' ', '_')+'_allIonPeakDiff', string.replace(chan, ' ', '_')+'_allIonPeakDiff', 10000, -50e6, 50e6)  
       
       histList.append(chanInfo['narrowhist'])
       histList.append(chanInfo['rawhist'])
       histList.append(chanInfo['positiveTriggerHist'])
       histList.append(chanInfo['peakPos'])
-      #histList.append(chanInfo['allIonPeakDiff'])
-      histList.append(chanInfo['maxIonPeakDiff'])
+ 
       
-      chanInfo['corrhists'] = {}
+      chanInfo['rawcorrhists'] = {}
+      chanInfo['narrowcorrhists'] = {}
+      
       for otherChan in chans.iterkeys():
         if otherChan != chan:
-          #print '     ', otherChan
-          #print '       min', chans[otherChan]['min']
-          #print '       max', chans[otherChan]['max']
-          #print '     ', json.dumps(chans[otherChan], indent=1)
-          chanInfo['corrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_hist', 
+          chanInfo['rawcorrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_hist', 
                                                       chanInfo['min'], chanInfo['max'], chans[otherChan]['min'], 
                                                       chans[otherChan]['max'])
-          histList.append(chanInfo['corrhists'][otherChan])
+          histList.append(chanInfo['rawcorrhists'][otherChan])
+          chanInfo['narrowcorrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_hist', 
+                                                      chanInfo['min'], chanInfo['max'], chans[otherChan]['min'], 
+                                                      chans[otherChan]['max'])
+          histList.append(chanInfo['narrowcorrhists'][otherChan])
                
 
-  #for i in range(len(histList)):
-    #print histList[i].GetName()
   
   #all of the histograms are now set up... loop back through the data and fill them in.
   for afile in fileList:
@@ -129,13 +127,14 @@ def main(*arg):
     for i in range(f.GetEntries()):
       f.GetEntry(i)
 
-
       for j in range(event.GetNumBolos()):
 
         bolo = event.GetBolo(j)
         detname = bolo.GetDetectorName()
         
-            
+        sumIon = 0
+        narrowSumIon = 0
+        
         for k in range(bolo.GetNumPulseRecords()):
           pulse = bolo.GetPulseRecord(k)
           
@@ -147,55 +146,51 @@ def main(*arg):
           result = pulse.GetPulseAnalysisRecord(resultName)
           polarity = polCalc.GetExpectedPolarity(pulse)
           #print pulse.GetChannelName()
-          chanInfo['peakPos'].Fill( (result.GetPeakPosition()-pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth())
-          chanInfo['rawhist'].Fill(polarity*result.GetAmp()) 
+          chanInfo['peakPos'].Fill( (result.GetPeakPosition() )
+          chanInfo['rawhist'].Fill(polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
+          sumIon += polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) 
           
-          if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.95:
-            chanInfo['positiveTriggerHist'].Fill(polarity*result.GetAmp())  #sort the if statements this way so that I get the heat pulses too...
-                    
-          if math.fabs(relPulseTime-ionPulseTime) <  10.0*pulse.GetPulseTimeWidth():
-              #print 'good heat pulse found', pulse.GetChannelName()
-              #print relPulseTime, ionPulseTime, math.fabs(relPulseTime-ionPulseTime), '<', 500.0*pulse.GetPulseTimeWidth()
-          
-              chanInfo['narrowhist'].Fill(polarity*result.GetAmp())
-          
-              #fill the correlation histogram for the other channels
-              for kk in range(bolo.GetNumPulseRecords()):
-                if kk != k:
-                  otherPulse = bolo.GetPulseRecord(kk)
-                  otherPol = polCalc.GetExpectedPolarity(pulse)
-                  otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
-                  
-                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp(), otherPol*otherResult.GetAmp())
-
-        sumIon = 0
-
-        for k in range(bolo.GetNumPulseRecords()):
-          pulse = bolo.GetPulseRecord(k)
-                    
-          chanInfo = detectorInfo[bolo.GetDetectorName()]['chans'][pulse.GetChannelName()]
-          result = pulse.GetPulseAnalysisRecord(resultName)
-          polarity = polCalc.GetExpectedPolarity(pulse)
-          
-          #just focus on the ionization pulses here.
-          if pulse.GetIsHeatPulse() == False:
+          if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.99:
+            chanInfo['positiveTriggerHist'].Fill(polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)))  #sort the if statements this way so that I get the heat pulses too...
+                 
+          min = 4090
+          max = 4110
+          if pulse.GetIsHeatPulse():
+            min = 250
+            max = 265
             
-            if math.fabs( (result.GetPeakPosition() -  pulse.GetPretriggerSize())*pulse.GetPulseTimeWidth()  - ionPulseTime) < 100.0e3: #100e3 ns = 100 us, which is typically 10 bins in ionization
-              #print 'good ion pulse found', pulse.GetChannelName()
-              #print result.GetPeakPosition(), peakPositionOfIon, math.fabs(result.GetPeakPosition() - peakPositionOfIon), '<', 500.0
-              chanInfo['narrowhist'].Fill(result.GetAmp())  
-              sumIon += polarity*result.GetAmp()
-              
-              #fill the correlation histogram for the other channels
-              for kk in range(bolo.GetNumPulseRecords()):
-                if kk != k:
-                  otherPulse = bolo.GetPulseRecord(kk)
-                  otherPol = polCalc.GetExpectedPolarity(pulse)
-                  otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
+          if result.GetPeakPosition() > min and result.GetPeakPosition() < max:
+            chanInfo['narrowhist'].Fill(polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)))
+            narrowSumIon += polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) 
+            
+            #fill the correlation histogram for the other if we have a narrow peak time, but only if the 
+            #peak time is also narrow on the other detectors
+            for kk in range(bolo.GetNumPulseRecords()):
+              if kk != k:
+                otherPulse = bolo.GetPulseRecord(kk)
+                otherPol = polCalc.GetExpectedPolarity(pulse)
+                otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
+                
+                min = 4090
+                max = 4110
+                if otherPulse.GetIsHeatPulse():
+                  min = 250
+                  max = 265
+                if otherResult.GetPeakPosition() > min and otherResult.GetPeakPosition() < max:  
+                  chanInfo['narrowcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
+
+          #fill the correlation histogram for the other channels
+          for kk in range(bolo.GetNumPulseRecords()):
+            if kk != k:
+              otherPulse = bolo.GetPulseRecord(kk)
+              otherPol = polCalc.GetExpectedPolarity(pulse)
+              otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
+
+              chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
                   
-                  chanInfo['corrhists'][otherPulse.GetChannelName()].Fill( result.GetAmp(), otherResult.GetAmp())      
-                  
-        detectorInfo[bolo.GetDetectorName()]['sumIonHist'].Fill(sumIon)  
+        detectorInfo[bolo.GetDetectorName()]['sumIonHist'].Fill(sumIon)
+        detectorInfo[bolo.GetDetectorName()]['narrowSumIonHist'].Fill(narrowSumIon)
+          
 
   fout.cd()
   for i in range(len(histList)):
