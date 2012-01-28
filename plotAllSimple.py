@@ -92,7 +92,7 @@ def main(*arg):
       chanInfo['rawhist'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
       chanInfo['narrowhist'] = getHist(string.replace(chan, ' ', '_')+'_narrowhist', chanInfo['min'], chanInfo['max'])
       chanInfo['positiveTriggerHist'] = getHist(string.replace(chan, ' ', '_')+'_postrighist', chanInfo['min'], chanInfo['max'])
-      chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', string.replace(chan, ' ', '_')+'_peakPos', 10000, -50e6, 50e6)  
+      chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', string.replace(chan, ' ', '_')+'_peakPos', 8192, 0, 8192)  
       
       histList.append(chanInfo['narrowhist'])
       histList.append(chanInfo['rawhist'])
