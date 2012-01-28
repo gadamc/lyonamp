@@ -153,8 +153,8 @@ def main(*arg):
           if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.99:
             chanInfo['positiveTriggerHist'].Fill(polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)))  #sort the if statements this way so that I get the heat pulses too...
                  
-          min = 4090
-          max = 4110
+          min = 4200
+          max = 4600
           if pulse.GetIsHeatPulse():
             min = 250
             max = 265
@@ -171,8 +171,8 @@ def main(*arg):
                 otherPol = polCalc.GetExpectedPolarity(pulse)
                 otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
                 
-                min = 4090
-                max = 4110
+                min = 4200
+                max = 4600
                 if otherPulse.GetIsHeatPulse():
                   min = 250
                   max = 265
