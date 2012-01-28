@@ -105,11 +105,11 @@ def main(*arg):
       
       for otherChan in chans.iterkeys():
         if otherChan != chan:
-          chanInfo['rawcorrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_hist', 
+          chanInfo['rawcorrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_rawcorr', 
                                                       chanInfo['min'], chanInfo['max'], chans[otherChan]['min'], 
                                                       chans[otherChan]['max'])
           histList.append(chanInfo['rawcorrhists'][otherChan])
-          chanInfo['narrowcorrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_hist', 
+          chanInfo['narrowcorrhists'][otherChan] = get2dHist(string.replace(chan, ' ', '_')+string.replace(otherChan, ' ', '_')+'_narrowcorr', 
                                                       chanInfo['min'], chanInfo['max'], chans[otherChan]['min'], 
                                                       chans[otherChan]['max'])
           histList.append(chanInfo['narrowcorrhists'][otherChan])
@@ -146,8 +146,8 @@ def main(*arg):
           result = pulse.GetPulseAnalysisRecord(resultName)
           polarity = polCalc.GetExpectedPolarity(pulse)
           #print pulse.GetChannelName()
-          chanInfo['peakPos'].Fill( (result.GetPeakPosition() )
-          chanInfo['rawhist'].Fill(polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
+          chanInfo['peakPos'].Fill( result.GetPeakPosition() )
+          chanInfo['rawhist'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
           sumIon += polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) 
           
           if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.99:
@@ -185,9 +185,12 @@ def main(*arg):
               otherPulse = bolo.GetPulseRecord(kk)
               otherPol = polCalc.GetExpectedPolarity(pulse)
               otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
-
-              chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
-                  
+              try:
+                chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
+              except Exception as e:
+                print str(type(e)) + ": " + str(e)
+                print 'pulse lengths: ', pulse.GetPulseLength(), otherPulse.GetPulseLength()
+  
         detectorInfo[bolo.GetDetectorName()]['sumIonHist'].Fill(sumIon)
         detectorInfo[bolo.GetDetectorName()]['narrowSumIonHist'].Fill(narrowSumIon)
           
