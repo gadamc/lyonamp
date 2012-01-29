@@ -18,8 +18,8 @@ def get2dHist(name, xmin, xmax, ymin, ymax):
   
 def main(*arg):  
   '''
-  Usage: ./plotAllSimple.py startRun endRun PulseAnalysisRecordName outputFile
-  example: ./plotAllSimple.py lk18b022 lk18b024 KTrapKamperProto lk18b.results.root
+  Usage: ./plotAllSimple.py startRun endRun PulseAnalysisRecordName outputFile recreate/update (recreate = default)
+  example: ./plotAllSimple.py lk18b022 lk18b024 KTrapKamperProto lk18b.results.root update
   '''  
   gROOT.SetBatch(True)
   startRunName = arg[0]
@@ -71,12 +71,17 @@ def main(*arg):
           
   
   #for each detector and channel, set up the histograms
-  fout = TFile(arg[3],'recreate')
+  theOption = 'recreate'
+  if len(arg) == 5:
+    theOption = arg[4]
+    
+  fout = TFile(arg[3],theOption)
   histList = []
   for det in detectorInfo.iterkeys():
     #print det
     #print json.dumps(detectorInfo[det], indent=1)
 
+    
     detectorInfo[det]['sumIonHist'] = getHist(det+'_sumIon', detectorInfo[detname]['minSumIon'], detectorInfo[detname]['maxSumIon'])
     histList.append(detectorInfo[det]['sumIonHist'])
     detectorInfo[det]['narrowSumIonHist'] = getHist(det+'_narrowSumIon', detectorInfo[detname]['minSumIon'], detectorInfo[detname]['maxSumIon'])
@@ -90,6 +95,7 @@ def main(*arg):
       
       #print json.dumps(chanInfo, indent=1)
       chanInfo['rawhist'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
+      chanInfo['baseline'] = getHist(string.replace(chan, ' ', '_')+'_rawhist', chanInfo['min'], chanInfo['max'])
       chanInfo['narrowhist'] = getHist(string.replace(chan, ' ', '_')+'_narrowhist', chanInfo['min'], chanInfo['max'])
       chanInfo['positiveTriggerHist'] = getHist(string.replace(chan, ' ', '_')+'_postrighist', chanInfo['min'], chanInfo['max'])
       chanInfo['peakPos'] = TH1D(string.replace(chan, ' ', '_')+'_peakPos', string.replace(chan, ' ', '_')+'_peakPos', 8192, 0, 8192)  
@@ -98,7 +104,7 @@ def main(*arg):
       histList.append(chanInfo['rawhist'])
       histList.append(chanInfo['positiveTriggerHist'])
       histList.append(chanInfo['peakPos'])
- 
+      histList.append(chanInfo['baseline'])
       
       chanInfo['rawcorrhists'] = {}
       chanInfo['narrowcorrhists'] = {}
@@ -143,8 +149,13 @@ def main(*arg):
             continue 
 
           chanInfo = detectorInfo[detname]['chans'][pulse.GetChannelName()]
-          result = pulse.GetPulseAnalysisRecord(resultName)
           polarity = polCalc.GetExpectedPolarity(pulse)
+          
+          result = pulse.GetPulseAnalysisRecord(resultName, True)
+          chanInfo['baseline'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
+          
+          result = pulse.GetPulseAnalysisRecord(resultName)
+          
           #print pulse.GetChannelName()
           chanInfo['peakPos'].Fill( result.GetPeakPosition() )
           chanInfo['rawhist'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
@@ -168,7 +179,7 @@ def main(*arg):
             for kk in range(bolo.GetNumPulseRecords()):
               if kk != k:
                 otherPulse = bolo.GetPulseRecord(kk)
-                otherPol = polCalc.GetExpectedPolarity(pulse)
+                otherPol = polCalc.GetExpectedPolarity(otherPulse)
                 otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
                 
                 min = 4200
@@ -183,7 +194,7 @@ def main(*arg):
           for kk in range(bolo.GetNumPulseRecords()):
             if kk != k:
               otherPulse = bolo.GetPulseRecord(kk)
-              otherPol = polCalc.GetExpectedPolarity(pulse)
+              otherPol = polCalc.GetExpectedPolarity(otherPulse)
               otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
               try:
                 chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
