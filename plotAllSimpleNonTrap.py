@@ -155,6 +155,9 @@ def main(*arg):
           chanInfo['baseline'].Fill( polarity*result.GetAmp() ) 
           
           result = pulse.GetPulseAnalysisRecord(resultName)
+
+          if result.GetExtra(2) != 0:
+            continue  #only look at pulses with good fits
           
           #print pulse.GetChannelName()
           chanInfo['peakPos'].Fill( result.GetPeakPosition() )
@@ -164,8 +167,8 @@ def main(*arg):
           if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.99:
             chanInfo['positiveTriggerHist'].Fill(polarity*result.GetAmp())  #sort the if statements this way so that I get the heat pulses too...
                  
-          min = 4200
-          max = 4600
+          min = 4060
+          max = 4200
           if pulse.GetIsHeatPulse():
             min = 250
             max = 265
@@ -183,8 +186,11 @@ def main(*arg):
                   otherPol = polCalc.GetExpectedPolarity(otherPulse)
                   otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
                   
-                  min = 4200
-                  max = 4600
+                  if otherResult.GetExtra(2) != 0:
+                    continue  #only good fits
+
+                  min = 4060
+                  max = 4200
                   if otherPulse.GetIsHeatPulse():
                     min = 250
                     max = 265
@@ -200,6 +206,10 @@ def main(*arg):
               otherPulse = bolo.GetPulseRecord(kk)
               otherPol = polCalc.GetExpectedPolarity(otherPulse)
               otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
+
+              if otherResult.GetExtra(2) != 0:
+                continue
+
               try:
                 chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp(), otherPol*otherResult.GetAmp())
               except Exception as e:
