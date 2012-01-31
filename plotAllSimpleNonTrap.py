@@ -152,17 +152,17 @@ def main(*arg):
           polarity = polCalc.GetExpectedPolarity(pulse)
           
           result = pulse.GetPulseAnalysisRecord(resultName, True)
-          chanInfo['baseline'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
+          chanInfo['baseline'].Fill( polarity*result.GetAmp() ) 
           
           result = pulse.GetPulseAnalysisRecord(resultName)
           
           #print pulse.GetChannelName()
           chanInfo['peakPos'].Fill( result.GetPeakPosition() )
-          chanInfo['rawhist'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
-          sumIon += polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) 
+          chanInfo['rawhist'].Fill( polarity*result.GetAmp() ) 
+          sumIon += polarity*result.GetAmp() 
           
           if result.GetPeakPosition() > pulse.GetPretriggerSize()*0.99:
-            chanInfo['positiveTriggerHist'].Fill(polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)))  #sort the if statements this way so that I get the heat pulses too...
+            chanInfo['positiveTriggerHist'].Fill(polarity*result.GetAmp())  #sort the if statements this way so that I get the heat pulses too...
                  
           min = 4200
           max = 4600
@@ -171,8 +171,8 @@ def main(*arg):
             max = 265
             
           if result.GetPeakPosition() > min and result.GetPeakPosition() < max:
-            chanInfo['narrowhist'].Fill(polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)))
-            narrowSumIon += polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) 
+            chanInfo['narrowhist'].Fill(polarity*result.GetAmp())
+            narrowSumIon += polarity*result.GetAmp() 
             
             #fill the correlation histogram for the other if we have a narrow peak time, but only if the 
             #peak time is also narrow on the other detectors
@@ -189,7 +189,7 @@ def main(*arg):
                     min = 250
                     max = 265
                     if otherResult.GetPeakPosition() > min and otherResult.GetPeakPosition() < max:  
-                      chanInfo['narrowcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
+                      chanInfo['narrowcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp(), otherPol*otherResult.GetAmp())
                 except Exception as e:
                   print str(e)
                   pass
@@ -201,7 +201,7 @@ def main(*arg):
               otherPol = polCalc.GetExpectedPolarity(otherPulse)
               otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
               try:
-                chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
+                chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp(), otherPol*otherResult.GetAmp())
               except Exception as e:
                 print str(type(e)) + ": " + str(e)
                 print 'pulse lengths: ', pulse.GetPulseLength(), otherPulse.GetPulseLength()
