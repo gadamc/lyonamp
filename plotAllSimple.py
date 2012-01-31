@@ -41,7 +41,7 @@ def main(*arg):
   for afile in fileList:
     
     f = KDataReader(afile)
-    print 'opening file', afile, f.GetEntries(), 'entries'
+    #print 'opening file', afile, f.GetEntries(), 'entries'
     
     event = f.GetEvent()
     #assuming that we're running with raw, unmerged data files and that for each 
@@ -68,7 +68,8 @@ def main(*arg):
           detectorInfo[detname]['chans'][channame] = {}
           detectorInfo[detname]['chans'][channame]['min'] = 33000
           detectorInfo[detname]['chans'][channame]['max'] = -33000
-          
+    
+    
   
   #for each detector and channel, set up the histograms
   theOption = 'recreate'
@@ -133,17 +134,21 @@ def main(*arg):
     for i in range(f.GetEntries()):
       f.GetEntry(i)
 
+      #print i
+      
       for j in range(event.GetNumBolos()):
-
+        
         bolo = event.GetBolo(j)
         detname = bolo.GetDetectorName()
-        
+        #print '    bolo ', j, detname
+
         sumIon = 0
         narrowSumIon = 0
         
         for k in range(bolo.GetNumPulseRecords()):
           pulse = bolo.GetPulseRecord(k)
-          
+          #print '\n      pulse ', k, pulse.GetChannelName()
+
           if pulse.GetPulseLength() == 0:
             #print 'pulse length is zero', pulse.GetChannelName()
             continue 
@@ -152,10 +157,18 @@ def main(*arg):
           polarity = polCalc.GetExpectedPolarity(pulse)
           
           result = pulse.GetPulseAnalysisRecord(resultName, True)
-          chanInfo['baseline'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
-          
+
+          try:
+            #print result.GetName(), result.IsBaseline()
+            chanInfo['baseline'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
+          except Exception as e:
+            print str(type(e)) + ': ' + str(e)
+            print 'no results? didn\'t find', resultName
+            continue 
+
           result = pulse.GetPulseAnalysisRecord(resultName)
-          
+          #print result.GetName(), result.IsBaseline()
+
           #print pulse.GetChannelName()
           chanInfo['peakPos'].Fill( result.GetPeakPosition() )
           chanInfo['rawhist'].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)) ) 
@@ -182,7 +195,8 @@ def main(*arg):
                   otherPulse = bolo.GetPulseRecord(kk)
                   otherPol = polCalc.GetExpectedPolarity(otherPulse)
                   otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
-                  
+                  #print 'correlation', kk, otherPulse.GetChannelName(), otherResult.GetName(), otherResult.IsBaseline()
+
                   min = 4200
                   max = 4600
                   if otherPulse.GetIsHeatPulse():
@@ -191,7 +205,8 @@ def main(*arg):
                     if otherResult.GetPeakPosition() > min and otherResult.GetPeakPosition() < max:  
                       chanInfo['narrowcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
                 except Exception as e:
-                  print str(e)
+                  print str(type(e)) + ": " + str(e)
+                  print chanInfo
                   pass
 
           #fill the correlation histogram for the other channels
@@ -200,6 +215,7 @@ def main(*arg):
               otherPulse = bolo.GetPulseRecord(kk)
               otherPol = polCalc.GetExpectedPolarity(otherPulse)
               otherResult = otherPulse.GetPulseAnalysisRecord(resultName)
+              #print 'correlation', kk, otherPulse.GetChannelName(), otherResult.GetName(), otherResult.IsBaseline()
               try:
                 chanInfo['rawcorrhists'][otherPulse.GetChannelName()].Fill( polarity*result.GetAmp()/(result.GetExtra(0)*result.GetExtra(1)), otherPol*otherResult.GetAmp()/(otherResult.GetExtra(0)*otherResult.GetExtra(1)))
               except Exception as e:
